@@ -16,9 +16,11 @@ interface Confession {
 }
 
 export default function FeedClient({
-                                       initialConfessions
+                                       initialConfessions,
+                                       showFilter = true
                                    }: {
     initialConfessions: Confession[]
+    showFilter?: boolean
 }) {
     const [userId, setUserId] = useState<string | null>(null)
     const [confessions, setConfessions] = useState(initialConfessions)
@@ -53,7 +55,9 @@ export default function FeedClient({
 
     return (
         <div style={styles.wrapper}>
-            <FilterBar selected={field} onChange={handleFilter} />
+            {showFilter && (
+                <FilterBar selected={field} onChange={handleFilter} />
+            )}
 
             {loading && (
                 <div style={styles.centered}>
