@@ -59,10 +59,10 @@ function getItemStyle(index: number, count: number): React.CSSProperties {
     }
 
     // 1 ảnh: full width, max 400px height
-    if (count === 1) return { ...base, height: "340px" }
+    if (count === 1) return { ...base, height: "640px" }
 
     // 2 ảnh: 2 cột bằng nhau
-    if (count === 2) return { ...base, height: "220px" }
+    if (count === 2) return { ...base, height: "420px" }
 
     // 3 ảnh: ảnh đầu chiếm cả hàng trên, 2 ảnh sau chia đôi hàng dưới
     if (count === 3) {
