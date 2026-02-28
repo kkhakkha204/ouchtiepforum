@@ -13,6 +13,7 @@ interface Confession {
     is_anonymous: boolean
     created_at: string
     image_urls?: string[]
+    user_id: string | null
 }
 
 export default function FeedClient({
@@ -39,7 +40,7 @@ export default function FeedClient({
 
         let query = supabase
             .from("confessions")
-            .select("id, content, field, position, level, is_anonymous, created_at, image_urls")
+            .select("id, content, field, position, level, is_anonymous, created_at, image_urls, user_id")
             .eq("is_public", true)
             .order("created_at", { ascending: false })
             .limit(20)
