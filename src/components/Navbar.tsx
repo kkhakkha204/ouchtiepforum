@@ -38,7 +38,7 @@ const styles: Record<string, React.CSSProperties> = {
         fontFamily: "'Montserrat', sans-serif",
         fontWeight: "500",
         fontSize: "12px",
-        color: "rgba(238,238,238,0.45)",
+        color: "rgba(238,238,238,0.8)",
         letterSpacing: "0.3px"
     }
 }

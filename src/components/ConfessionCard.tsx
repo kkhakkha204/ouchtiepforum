@@ -19,6 +19,7 @@ interface Confession {
 interface Profile {
     display_name: string
     anonymous_name: string
+    avatar_url?: string | null
 }
 
 const REACTIONS = [
@@ -67,7 +68,7 @@ export default function ConfessionCard({
             if (confession.user_id) {
                 const { data: prof } = await supabase
                     .from("profiles")
-                    .select("display_name, anonymous_name")
+                    .select("display_name, anonymous_name, avatar_url")
                     .eq("id", confession.user_id)
                     .single()
                 setAuthorProfile(prof)
@@ -124,16 +125,16 @@ export default function ConfessionCard({
                 <div style={styles.authorLeft}>
                     {authorHref ? (
                         <Link href={authorHref} style={styles.authorLink}>
-                            <div style={styles.authorAvatar}>
-                                {authorName[0]?.toUpperCase()}
-                            </div>
+                            {authorProfile?.avatar_url ? (
+                                <img src={authorProfile.avatar_url} alt={authorName} style={styles.authorAvatarImg} />
+                            ) : (
+                                <div style={styles.authorAvatar}>{authorName[0]?.toUpperCase()}</div>
+                            )}
                             <span style={styles.authorName}>{authorName}</span>
                         </Link>
                     ) : (
                         <div style={styles.authorLink}>
-                            <div style={{ ...styles.authorAvatar, ...styles.authorAvatarAnon }}>
-                                🎭
-                            </div>
+                            <div style={{ ...styles.authorAvatar, ...styles.authorAvatarAnon }}>🎭</div>
                             <span style={styles.authorName}>{authorName}</span>
                         </div>
                     )}
@@ -189,6 +190,9 @@ export default function ConfessionCard({
                                     title={r.label}
                                 >
                                     {r.emoji}
+                                    <span style={styles.pickerCount}>
+                    {reactions[r.type] ?? 0}
+                </span>
                                 </button>
                             ))}
                         </div>
@@ -242,6 +246,10 @@ const styles: Record<string, React.CSSProperties> = {
     authorName: {
         fontFamily: "'Montserrat', sans-serif", fontWeight: "700",
         fontSize: "12px", color: "rgba(238,238,238,0.75)"
+    },
+    authorAvatarImg: {
+        width: "28px", height: "28px", borderRadius: "50%",
+        objectFit: "cover", flexShrink: 0
     },
     date: {
         fontFamily: "'Montserrat', sans-serif", fontWeight: "500",
@@ -299,9 +307,16 @@ const styles: Record<string, React.CSSProperties> = {
         boxShadow: "0 8px 24px rgba(0,0,0,0.5)", zIndex: 10,
         whiteSpace: "nowrap"
     },
+    pickerCount: {
+        fontFamily: "'Montserrat', sans-serif", fontWeight: "700",
+        fontSize: "10px", color: "rgba(238,238,238,0.5)",
+        lineHeight: 1
+    },
     pickerBtn: {
         background: "none", border: "none", cursor: "pointer",
-        fontSize: "18px", padding: "4px 6px", borderRadius: "8px"
+        fontSize: "18px", padding: "4px 8px", borderRadius: "8px",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        gap: "2px", minWidth: "36px"
     },
     pickerBtnActive: { background: "rgba(216,64,64,0.2)" },
     reactionCount: {

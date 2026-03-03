@@ -234,7 +234,6 @@ export default function ProfileClient({
                         <div style={styles.feed}>
                             {confessions.map(c => (
                                 <div key={c.id} style={{ position: "relative" }}>
-                                    <ConfessionCard confession={c} userId={currentUserId} />
                                     {isOwner && (
                                         <div style={styles.deleteWrap}>
                                             {deleteConfirmId === c.id ? (
@@ -250,6 +249,7 @@ export default function ProfileClient({
                                             )}
                                         </div>
                                     )}
+                                    <ConfessionCard confession={c} userId={currentUserId} />
                                 </div>
                             ))}
                         </div>
@@ -405,7 +405,7 @@ const styles: Record<string, React.CSSProperties> = {
     },
 
     // Delete
-    deleteWrap: { display: "flex", justifyContent: "flex-end", marginTop: "6px" },
+    deleteWrap: { display: "flex", justifyContent: "flex-end", marginBottom: "6px" },
     deleteBtn: {
         background: "none", border: "none",
         color: "rgba(238,238,238,0.2)", cursor: "pointer",

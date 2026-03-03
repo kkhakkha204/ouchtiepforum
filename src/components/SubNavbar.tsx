@@ -78,13 +78,23 @@ export default function SubNavbar() {
     return (
         <div style={styles.sticky}>
             <div style={styles.inner}>
+
+                {/* Home */}
+                <Link href="/" style={styles.homeBtn} title="Trang chủ">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 12L12 3L21 12V21H15V15H9V21H3V12Z"
+                              stroke="rgba(238,238,238,0.8)" strokeWidth="1.8"
+                              strokeLinejoin="round" strokeLinecap="round"/>
+                    </svg>
+                </Link>
+
                 {/* Search */}
                 <div ref={searchRef} style={{ position: "relative", flex: 1 }}>
                     <form onSubmit={handleSubmit}>
                         <div style={styles.inputWrap}>
                             <svg style={styles.icon} viewBox="0 0 20 20" fill="none">
-                                <circle cx="9" cy="9" r="6" stroke="rgba(238,238,238,0.3)" strokeWidth="1.5"/>
-                                <path d="M13.5 13.5L17 17" stroke="rgba(238,238,238,0.3)" strokeWidth="1.5" strokeLinecap="round"/>
+                                <circle cx="9" cy="9" r="6" stroke="rgba(238,238,238,0.8)" strokeWidth="1.5"/>
+                                <path d="M13.5 13.5L17 17" stroke="rgba(238,238,238,0.8)" strokeWidth="1.5" strokeLinecap="round"/>
                             </svg>
                             <input
                                 style={styles.input}
@@ -144,15 +154,15 @@ export default function SubNavbar() {
                                     style={styles.dropItem}
                                     onClick={() => setDropdownOpen(false)}
                                     onMouseEnter={e => (e.currentTarget.style.color = "#D84040")}
-                                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(238,238,238,0.45)")}
+                                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(238,238,238,0.6)")}
                                 >
-                                    👤 Trang cá nhân
+                                    Trang cá nhân
                                 </Link>
                                 <div style={styles.dropDivider} />
                                 <button
                                     style={styles.signOutBtn}
                                     onMouseEnter={e => (e.currentTarget.style.color = "#D84040")}
-                                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(238,238,238,0.45)")}
+                                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(238,238,238,0.6)")}
                                     onClick={handleSignOut}>
                                     ↩ Đăng xuất
                                 </button>
@@ -178,6 +188,13 @@ const styles: Record<string, React.CSSProperties> = {
         maxWidth: "720px", margin: "0 auto",
         padding: "10px 24px",
         display: "flex", alignItems: "center", gap: "12px"
+    },
+    homeBtn: {
+        flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+        width: "36px", height: "36px", borderRadius: "8px",
+        background: "rgba(238,238,238,0.04)",
+        border: "1px solid rgba(142,22,22,0.25)",
+        textDecoration: "none", transition: "border-color 0.15s"
     },
     icon: { width: "16px", height: "16px", flexShrink: 0 },
     inputWrap: {
@@ -257,19 +274,19 @@ const styles: Record<string, React.CSSProperties> = {
     },
     userEmail: {
         fontFamily: "'Montserrat', sans-serif", fontWeight: "500",
-        fontSize: "10px", color: "rgba(238,238,238,0.35)"
+        fontSize: "10px", color: "rgba(238,238,238,0.6)"
     },
     dropDivider: { height: "1px", background: "rgba(142,22,22,0.25)" },
     dropItem: {
         background: "none", border: "none",
-        color: "rgba(238,238,238,0.45)",
+        color: "rgba(238,238,238,0.6)",
         fontFamily: "'Montserrat', sans-serif", fontWeight: "600",
         fontSize: "12px", cursor: "pointer", textAlign: "left" as const,
         padding: "4px", textDecoration: "none", transition: "color 0.15s"
     },
     signOutBtn: {
         background: "none", border: "none",
-        color: "rgba(238,238,238,0.45)",
+        color: "rgba(238,238,238,0.6)",
         fontFamily: "'Montserrat', sans-serif", fontWeight: "600",
         fontSize: "12px", cursor: "pointer", textAlign: "left" as const,
         padding: "4px", transition: "color 0.15s"
