@@ -61,6 +61,7 @@ export default function ConfessionDetail({
     const [replyText, setReplyText] = useState("")
     const [submitting, setSubmitting] = useState(false)
     const [reacting, setReacting] = useState(false)
+    const [expandedReplies, setExpandedReplies] = useState<Record<string, number>>({})
 
     useEffect(() => {
         const init = async () => {
@@ -269,13 +270,32 @@ export default function ConfessionDetail({
 
     const showAnonToggle = myCommentIsAnon === null && userId !== confession.user_id
 
-    const buildTree = (comments: Comment[], parentId: string | null = null, depth = 0): React.ReactElement[] => {
-        return comments
-            .filter(c => c.parent_id === parentId)
-            .map(c => {
+    const buildTree = (allComments: Comment[], parentId: string | null = null, depth = 0): React.ReactElement[] => {
+        const children = allComments.filter(c => c.parent_id === parentId)
+        if (children.length === 0) return []
+
+        const INITIAL_SHOW = 3
+        const LOAD_MORE_STEP = 20
+
+        // Với root (depth=0): luôn hiện hết, không collapse
+        // Với replies (depth>0): collapse, chỉ hiện INITIAL_SHOW đầu
+        const key = parentId ?? "__root__"
+        const shownCount = depth === 0
+            ? children.length
+            : (expandedReplies[key] ?? INITIAL_SHOW)
+
+        const visibleChildren = children.slice(0, shownCount)
+        const hiddenCount = children.length - visibleChildren.length
+        const canLoadMore = hiddenCount > 0
+
+        return [
+            ...visibleChildren.map(c => {
                 const cName = getCommentAuthorName(c)
                 const cHref = getCommentAuthorHref(c)
                 const avatarLetter = cName[0]?.toUpperCase()
+                const replyChildren = allComments.filter(r => r.parent_id === c.id)
+                const replyKey = c.id
+                const isCollapsed = replyChildren.length > 0 && !(expandedReplies[replyKey] !== undefined)
 
                 return (
                     <div key={c.id} style={{ ...styles.commentCard, marginLeft: depth > 0 ? Math.min(depth * 20, 60) : 0 }}>
@@ -306,10 +326,7 @@ export default function ConfessionDetail({
                         {/* Like + reply */}
                         <div style={styles.cReactions}>
                             <button
-                                style={{
-                                    ...styles.cLikeBtn,
-                                    ...(c.user_liked ? styles.cLikeBtnActive : {})
-                                }}
+                                style={{ ...styles.cLikeBtn, ...(c.user_liked ? styles.cLikeBtnActive : {}) }}
                                 onClick={() => handleLikeComment(c.id)}
                                 disabled={!userId}
                                 title="Thích"
@@ -324,16 +341,38 @@ export default function ConfessionDetail({
                                     ↩ Trả lời
                                 </button>
                             )}
+                            {/* Nút xem replies khi đang collapsed */}
+                            {isCollapsed && (
+                                <button
+                                    style={styles.replyBtn}
+                                    onClick={() => setExpandedReplies(prev => ({ ...prev, [replyKey]: INITIAL_SHOW }))}
+                                >
+                                    ▶ {replyChildren.length} trả lời
+                                </button>
+                            )}
+                            {/* Nút ẩn replies khi đang expanded */}
+                            {!isCollapsed && replyChildren.length > 0 && (
+                                <button
+                                    style={styles.replyBtn}
+                                    onClick={() => setExpandedReplies(prev => {
+                                        const next = { ...prev }
+                                        delete next[replyKey]
+                                        return next
+                                    })}
+                                >
+                                    ▲ Ẩn trả lời
+                                </button>
+                            )}
                         </div>
 
                         {replyTo === c.id && (
                             <div style={styles.replyForm}>
-                                <textarea
-                                    value={replyText}
-                                    onChange={e => setReplyText(e.target.value.slice(0, 300))}
-                                    placeholder="Trả lời..."
-                                    style={styles.textarea}
-                                />
+                            <textarea
+                                value={replyText}
+                                onChange={e => setReplyText(e.target.value.slice(0, 300))}
+                                placeholder="Trả lời..."
+                                style={styles.textarea}
+                            />
                                 <div style={styles.replyActions}>
                                     {myCommentIsAnon === null && userId !== confession.user_id && (
                                         <label style={styles.anonLabel}>
@@ -358,10 +397,26 @@ export default function ConfessionDetail({
                             </div>
                         )}
 
-                        {buildTree(comments, c.id, depth + 1)}
+                        {/* Render replies nếu đang expanded */}
+                        {!isCollapsed && buildTree(allComments, c.id, depth + 1)}
                     </div>
                 )
-            })
+            }),
+
+            // Nút "Xem thêm X trả lời" ở cuối group
+            ...(canLoadMore ? [
+                <button
+                    key={`load-more-${key}`}
+                    style={{ ...styles.replyBtn, marginLeft: depth > 0 ? Math.min(depth * 20, 60) : 0, marginTop: 4 }}
+                    onClick={() => setExpandedReplies(prev => ({
+                        ...prev,
+                        [key]: Math.min((prev[key] ?? INITIAL_SHOW) + LOAD_MORE_STEP, children.length)
+                    }))}
+                >
+                    Xem thêm {Math.min(hiddenCount, LOAD_MORE_STEP)} trả lời
+                </button>
+            ] : [])
+        ]
     }
 
     return (
@@ -620,7 +675,7 @@ const styles: Record<string, React.CSSProperties> = {
     },
     commentingAs: {
         fontFamily: "'Montserrat', sans-serif", fontSize: "11px",
-        color: "rgba(238,238,238,0.4)", fontWeight: "500"
+        color: "rgba(238,238,238,0.8)", fontWeight: "500"
     },
     textarea: {
         width: "100%", minHeight: "80px",
@@ -717,7 +772,7 @@ const styles: Record<string, React.CSSProperties> = {
     },
     replyBtn: {
         background: "none", border: "none",
-        color: "rgba(238,238,238,0.35)",
+        color: "rgba(238,238,238,0.8)",
         fontFamily: "'Montserrat', sans-serif", fontWeight: "600",
         fontSize: "11px", cursor: "pointer", padding: "3px 6px"
     },

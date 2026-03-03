@@ -112,9 +112,11 @@ export default function ProfileClient({
     }
 
     const handleDelete = async (id: string) => {
-        await supabase.from("confessions").delete().eq("id", id)
+        const { error } = await supabase.from("confessions").delete().eq("id", id)
+        if (error) { console.error("Delete failed:", error.message); return }
         setConfessions(prev => prev.filter(c => c.id !== id))
         setDeleteConfirmId(null)
+        router.refresh()
     }
 
     const totalConfessions = confessions.length
@@ -392,7 +394,7 @@ const styles: Record<string, React.CSSProperties> = {
     feedSection: {},
     feedTitle: {
         fontFamily: "'Montserrat', sans-serif", fontWeight: "800",
-        fontSize: "14px", color: "rgba(238,238,238,0.4)",
+        fontSize: "14px", color: "rgba(238,238,238,0.8)",
         letterSpacing: "0.5px", textTransform: "uppercase",
         marginBottom: "16px", paddingBottom: "10px",
         borderBottom: "1px solid rgba(142,22,22,0.2)"
@@ -408,7 +410,7 @@ const styles: Record<string, React.CSSProperties> = {
     deleteWrap: { display: "flex", justifyContent: "flex-end", marginBottom: "6px" },
     deleteBtn: {
         background: "none", border: "none",
-        color: "rgba(238,238,238,0.2)", cursor: "pointer",
+        color: "rgba(238,238,238,0.8)", cursor: "pointer",
         fontFamily: "'Montserrat', sans-serif", fontWeight: "600",
         fontSize: "11px", padding: "2px 4px"
     },
