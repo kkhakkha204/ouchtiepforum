@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase"
 import Navbar from "@/components/Navbar"
 import ConfessionDetail from "@/components/ConfessionDetail"
 import { notFound } from "next/navigation"
+import SubNavbar from "@/components/SubNavbar";
 
 export default async function ConfessionPage({
                                                  params
@@ -28,6 +29,7 @@ export default async function ConfessionPage({
     return (
         <main>
             <Navbar />
+            <SubNavbar/>
             <ConfessionDetail
                 confession={confession}
                 initialComments={comments ?? []}

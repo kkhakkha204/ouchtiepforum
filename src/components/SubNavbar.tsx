@@ -10,6 +10,7 @@ export default function SubNavbar() {
     const [query, setQuery] = useState("")
     const [show, setShow] = useState(false)
     const [user, setUser] = useState<User | null>(null)
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const router = useRouter()
     const searchRef = useRef<HTMLDivElement>(null)
@@ -19,16 +20,30 @@ export default function SubNavbar() {
         ? FIELDS.filter((f) => f.toLowerCase().includes(query.toLowerCase()))
         : FIELDS
 
-    // Lấy session
     useEffect(() => {
-        supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
+        supabase.auth.getSession().then(({ data }) => {
+            const u = data.session?.user ?? null
+            setUser(u)
+            if (u) fetchAvatar(u.id)
+        })
         const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
-            setUser(session?.user ?? null)
+            const u = session?.user ?? null
+            setUser(u)
+            if (u) fetchAvatar(u.id)
+            else setAvatarUrl(null)
         })
         return () => listener.subscription.unsubscribe()
     }, [])
 
-    // Click ngoài đóng dropdown search
+    const fetchAvatar = async (userId: string) => {
+        const { data } = await supabase
+            .from("profiles")
+            .select("avatar_url")
+            .eq("id", userId)
+            .single()
+        setAvatarUrl(data?.avatar_url ?? null)
+    }
+
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShow(false)
@@ -109,7 +124,11 @@ export default function SubNavbar() {
                     <div ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
                         <button style={styles.avatarBtn} onClick={() => setDropdownOpen(v => !v)}>
                             <div style={styles.avatarRing}>
-                                <div style={styles.avatar}>{avatarLetter}</div>
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="avatar" style={styles.avatarImg} />
+                                ) : (
+                                    <div style={styles.avatar}>{avatarLetter}</div>
+                                )}
                             </div>
                         </button>
 
@@ -119,6 +138,16 @@ export default function SubNavbar() {
                                     <p style={styles.userName}>{user.user_metadata?.full_name ?? "Chiến binh ẩn danh"}</p>
                                     <p style={styles.userEmail}>{user.email}</p>
                                 </div>
+                                <div style={styles.dropDivider} />
+                                <Link
+                                    href={`/profile/${user.id}`}
+                                    style={styles.dropItem}
+                                    onClick={() => setDropdownOpen(false)}
+                                    onMouseEnter={e => (e.currentTarget.style.color = "#D84040")}
+                                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(238,238,238,0.45)")}
+                                >
+                                    👤 Trang cá nhân
+                                </Link>
                                 <div style={styles.dropDivider} />
                                 <button
                                     style={styles.signOutBtn}
@@ -185,7 +214,6 @@ const styles: Record<string, React.CSSProperties> = {
         padding: "12px 16px", color: "rgba(238,238,238,0.25)",
         fontFamily: "'Montserrat', sans-serif", fontSize: "12px"
     },
-    // Auth
     loginBtn: {
         flexShrink: 0, padding: "8px 18px",
         background: "linear-gradient(135deg, #D84040 0%, #8E1616 100%)",
@@ -198,8 +226,14 @@ const styles: Record<string, React.CSSProperties> = {
     },
     avatarBtn: { background: "none", border: "none", cursor: "pointer", padding: "0" },
     avatarRing: {
+        width: "36px", height: "36px",
         padding: "2px", borderRadius: "50%",
-        background: "linear-gradient(135deg, #D84040, #8E1616)"
+        background: "linear-gradient(135deg, #D84040, #8E1616)",
+        display: "flex", alignItems: "center", justifyContent: "center"
+    },
+    avatarImg: {
+        width: "32px", height: "32px", borderRadius: "50%",
+        objectFit: "cover", border: "2px solid #1D1616", display: "block"
     },
     avatar: {
         width: "32px", height: "32px", borderRadius: "50%",
@@ -226,11 +260,18 @@ const styles: Record<string, React.CSSProperties> = {
         fontSize: "10px", color: "rgba(238,238,238,0.35)"
     },
     dropDivider: { height: "1px", background: "rgba(142,22,22,0.25)" },
+    dropItem: {
+        background: "none", border: "none",
+        color: "rgba(238,238,238,0.45)",
+        fontFamily: "'Montserrat', sans-serif", fontWeight: "600",
+        fontSize: "12px", cursor: "pointer", textAlign: "left" as const,
+        padding: "4px", textDecoration: "none", transition: "color 0.15s"
+    },
     signOutBtn: {
         background: "none", border: "none",
         color: "rgba(238,238,238,0.45)",
         fontFamily: "'Montserrat', sans-serif", fontWeight: "600",
-        fontSize: "12px", cursor: "pointer", textAlign: "left",
+        fontSize: "12px", cursor: "pointer", textAlign: "left" as const,
         padding: "4px", transition: "color 0.15s"
     }
 }
